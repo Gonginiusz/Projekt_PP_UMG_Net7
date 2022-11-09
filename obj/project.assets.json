@@ -8,23 +8,23 @@
     "net7.0": []
   },
   "packageFolders": {
-    "C:\\Users\\Piotr Knasiak\\.nuget\\packages\\": {},
-    "E:\\hh\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
+    "C:\\Users\\piokn\\.nuget\\packages\\": {},
+    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\Piotr Knasiak\\Documents\\GitHub\\Projekt_PP_UMG_Net7\\Projekt_PP_UMG_Net7.csproj",
+      "projectUniqueName": "C:\\Users\\piokn\\Documents\\GitHub\\Projekt_PP_UMG_Net7\\Projekt_PP_UMG_Net7.csproj",
       "projectName": "Projekt_PP_UMG_Net7",
-      "projectPath": "C:\\Users\\Piotr Knasiak\\Documents\\GitHub\\Projekt_PP_UMG_Net7\\Projekt_PP_UMG_Net7.csproj",
-      "packagesPath": "C:\\Users\\Piotr Knasiak\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\Piotr Knasiak\\Documents\\GitHub\\Projekt_PP_UMG_Net7\\obj\\",
+      "projectPath": "C:\\Users\\piokn\\Documents\\GitHub\\Projekt_PP_UMG_Net7\\Projekt_PP_UMG_Net7.csproj",
+      "packagesPath": "C:\\Users\\piokn\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\piokn\\Documents\\GitHub\\Projekt_PP_UMG_Net7\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
-        "E:\\hh\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
       ],
       "configFilePaths": [
-        "C:\\Users\\Piotr Knasiak\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\piokn\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
@@ -62,12 +62,7 @@
         ],
         "assetTargetFallback": true,
         "warn": true,
-        "frameworkReferences": {
-          "Microsoft.NETCore.App": {
-            "privateAssets": "all"
-          }
-        },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.100\\RuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.402\\RuntimeIdentifierGraph.json"
       }
     }
   }
