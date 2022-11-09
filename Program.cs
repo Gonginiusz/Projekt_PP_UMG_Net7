@@ -9,6 +9,7 @@
 
 #pragma warning disable C8604
 
+    // Zmiana
     public static class FunkcjeAuto
     {
         /// <summary>
