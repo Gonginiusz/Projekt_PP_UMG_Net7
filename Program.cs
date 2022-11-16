@@ -251,6 +251,7 @@
         /// <param name="IDKlienta"></param>
         public static DaneLogowania[] WczytajWszystkiePliki(DaneLogowania[] pustaInstancja)
         {
+            Console.Title = "Telefonia komorkowa";
             string typPliku = "DaneLogowania";
             ŁadowanieWszystkichPlików łwp = new(typPliku);
             pustaInstancja = new DaneLogowania[łwp.ListaDanych.Length];
@@ -333,7 +334,7 @@
         /// <param name="folder"></param>
         /// <param name="ID"></param>
         /// <param name="IDKlienta"></param>
-        public static UrządzenieKlienta[] WczytajWszystkiePliki(UrządzenieKlienta[] pustaInstancja)
+        public static UrządzenieKlienta[] WczytajWszystkiePliki(UrządzenieKlienta[] pustaInstancja, int IDKlienta)
         {
             string typPliku = "UrządzeniaKlienta";
             ŁadowanieWszystkichPlików łwp = new(typPliku);
@@ -354,7 +355,7 @@
         /// <param name="folder"></param>
         /// <param name="ID"></param>
         /// <param name="IDKlienta"></param>
-        public static AbonamentKlienta[] WczytajWszystkiePliki(AbonamentKlienta[] pustaInstancja)
+        public static AbonamentKlienta[] WczytajWszystkiePliki(AbonamentKlienta[] pustaInstancja, int IDKlienta)
         {
             string typPliku = "AbonamentyKlienta";
             ŁadowanieWszystkichPlików łwp = new(typPliku);
@@ -375,7 +376,7 @@
         /// <param name="folder"></param>
         /// <param name="ID"></param>
         /// <param name="IDKlienta"></param>
-        public static PakietKlienta[] WczytajWszystkiePliki(PakietKlienta[] pustaInstancja)
+        public static PakietKlienta[] WczytajWszystkiePliki(PakietKlienta[] pustaInstancja, int IDKlienta)
         {
             string typPliku = "PakietyKlienta";
             ŁadowanieWszystkichPlików łwp = new(typPliku);
@@ -585,8 +586,17 @@
 
         public int IDOferty;                                            // ID oferty(info) z której pochodzi ten abonament
     }
+
+    public struct WszystkieDaneKlienta
+    {
+        public DaneLogowania daneLog;
+        public UrządzenieKlienta[] urządzenia;
+        public AbonamentKlienta[] abonamenty;
+        public PakietKlienta pakiety;
+    }
     #endregion
 
+    #region KlasyŁadowaniaIZapisywania
     public class ZapisywaniePlików
     {
         public ZapisywaniePlików(object Iteracja, int ID, int IDKlienta = -1)
@@ -692,7 +702,7 @@
     public class ŁadowanieWszystkichPlików
     {
         public object?[] ListaDanych;
-        public ŁadowanieWszystkichPlików(string typPliku)
+        public ŁadowanieWszystkichPlików(string typPliku, int IDKlienta = -1)
         {
             ŁadowaniePlików łp;
             int[] listaID = FunkcjeAuto.ListaID(typPliku);
@@ -705,7 +715,7 @@
                     {
                         while (i < listaID.Length)
                         {
-                            łp = new ŁadowaniePlików(typPliku, listaID[i]);
+                            łp = new ŁadowaniePlików(typPliku, listaID[i], IDKlienta);
                             this.ListaDanych[i] = łp.WczytanyPlik;
                             i++;
                         }
@@ -715,7 +725,7 @@
                     {
                         while (i < listaID.Length)
                         {
-                            łp = new ŁadowaniePlików(typPliku, listaID[i]);
+                            łp = new ŁadowaniePlików(typPliku, listaID[i], IDKlienta);
                             this.ListaDanych[i] = łp.WczytanyPlik;
                             i++;
                         }
@@ -725,7 +735,7 @@
                     {
                         while (i < listaID.Length)
                         {
-                            łp = new ŁadowaniePlików(typPliku, listaID[i]);
+                            łp = new ŁadowaniePlików(typPliku, listaID[i], IDKlienta);
                             this.ListaDanych[i] = łp.WczytanyPlik;
                             i++;
                         }
@@ -735,7 +745,7 @@
                     {
                         while (i < listaID.Length)
                         {
-                            łp = new ŁadowaniePlików(typPliku, listaID[i]);
+                            łp = new ŁadowaniePlików(typPliku, listaID[i], IDKlienta);
                             this.ListaDanych[i] = łp.WczytanyPlik;
                             i++;
                         }
@@ -745,7 +755,7 @@
                     {
                         while (i < listaID.Length)
                         {
-                            łp = new ŁadowaniePlików(typPliku, listaID[i]);
+                            łp = new ŁadowaniePlików(typPliku, listaID[i], IDKlienta);
                             this.ListaDanych[i] = łp.WczytanyPlik;
                             i++;
                         }
@@ -755,7 +765,7 @@
                     {
                         while (i < listaID.Length)
                         {
-                            łp = new ŁadowaniePlików(typPliku, listaID[i]);
+                            łp = new ŁadowaniePlików(typPliku, listaID[i], IDKlienta);
                             this.ListaDanych[i] = łp.WczytanyPlik;
                             i++;
                         }
@@ -765,7 +775,7 @@
                     {
                         while (i < listaID.Length)
                         {
-                            łp = new ŁadowaniePlików(typPliku, listaID[i]);
+                            łp = new ŁadowaniePlików(typPliku, listaID[i], IDKlienta);
                             this.ListaDanych[i] = łp.WczytanyPlik;
                             i++;
                         }
@@ -780,27 +790,16 @@
 
         }
     }
+    #endregion
 
     internal class Program
     {
         private static readonly string KodAdminów = "123";
-        public static void WyczyścEkran()
-        {
-            Stopwatch czasomierz = new();
 
-            for (int i = 0; i <= Console.WindowHeight; i++)
-            {
-                while (true)
-                {
-                    czasomierz.Start();
-                    if (czasomierz.ElapsedMilliseconds >= 8)
-                    {
-                        Console.WriteLine("");
-                        czasomierz.Restart();
-                        break;
-                    }
-                }
-            }
+        public static void CzyszczenieEkranu()
+        {
+            Console.Clear();
+            Console.WriteLine();
         }
         public static string ZobaczKod()
         {
@@ -836,14 +835,14 @@
 
             i = 0;
 
-            WyczyścEkran();
-            Console.WriteLine("Tworzenie nowego urzytkownika : ");
+
+            Console.WriteLine("\n Tworzenie nowego użytkownika: ");
 
             do
             {
                 powtórka = false;
 
-                Console.Write("\n  Podaj login : ");
+                Console.Write("\n\n\tPodaj login: ");
                 nowyU.Login = Console.ReadLine();
 
                 foreach (string login in listaLoginów)
@@ -851,11 +850,11 @@
                     if (login == nowyU.Login)
                     {
                         powtórka = true;
-                        Console.Write("\n    Login zajęty");
+                        Console.Write("\n\n Login zajęty. ");
 
                         if ((i++) % 3 == 0)
                         {
-                            Console.Write("\n      Wciśnij escape (esc) aby wyjść");
+                            Console.Write("Jeśli chcesz wyjsc wcisnij Escape (esc): ");
                             ConsoleKeyInfo kij = Console.ReadKey(true);
 
                             if (kij.Key == ConsoleKey.Escape)
@@ -960,10 +959,10 @@
 
             i = 0;
 
-            Console.Write("\n  Zarejestrować jako admin? Pamiętaj, że admini nie mają folderu Klienta(Y/N) : ");
-            ConsoleKeyInfo admin = Console.ReadKey(true);
+            Console.Write("\n  Zarejestrować jako obsługa? Pamiętaj, że obsługa nie ma folderu Klienta(Y/N) : ");
+            string admin = Console.ReadLine();
 
-            if (admin.Key == ConsoleKey.Y)
+            if (admin.ToUpper() == "Y")
             {
 
                 while (true)
@@ -974,7 +973,7 @@
                         break;
                     }
 
-                    Console.Write("\n  Podaj kod admina : ");
+                    Console.Write("\n  Podaj kod : ");
                     string? kod = Console.ReadLine();
                     i++;
 
@@ -989,7 +988,7 @@
                     }
                     else if (i % 3 == 1)
                     {
-                        Console.Write("      Kontunuować? Wpisz \"exit\" by wyjść ");
+                        Console.Write("      Kontunuować? Wpisz \"exit\" aby wyjść ");
                         ConsoleKeyInfo kij = Console.ReadKey(true);
 
                         if (kij.Key == ConsoleKey.Escape)
@@ -1011,27 +1010,31 @@
             DaneLogowania? danaZalogowania = new();
             bool powtórka;
 
-            WyczyścEkran();
-            Console.WriteLine("Wpisz \"utwórz\" w miejsce loginu lub hasła, by stworzyć nowy profil ");
+            CzyszczenieEkranu();
+            Thread.Sleep(100);
+            Console.WriteLine("\n Wpisz \"utwórz\" w miejsce loginu lub hasła, aby stworzyć nowy profil ");
+            Console.WriteLine();
 
             do
             {
                 powtórka = false;
 
-                Console.Write("  Podaj login : ");
+                Console.Write("\n\tPodaj login: ");
                 string? login = Console.ReadLine();
 
                 if (login == "utwórz")
                 {
+                    CzyszczenieEkranu();
+                    Thread.Sleep(100);
                     danaZalogowania = DodajUżytkownika();
                     if (danaZalogowania == null)
                     {
-                        WyczyścEkran();
-                        Console.Write("    Zrezygnowano z tworzenia urzytkownika, kontynuować logowanie? (Y/N) ");
-                        ConsoleKeyInfo kij = Console.ReadKey();
-                        Console.WriteLine();
 
-                        if (kij.Key != ConsoleKey.N)
+                        Console.Write("\n\n Zrezygnowano z tworzenia użytkownika, kontynuować logowanie? (Y/N): ");
+                        string kij = Console.ReadLine();
+                        Console.WriteLine("\n");
+
+                        if (kij.ToLower() != "n")
                         {
                             powtórka = true;
                             continue;
@@ -1040,7 +1043,7 @@
                     break;
                 }
 
-                Console.Write("\n  Podaj hasło : ");
+                Console.Write("\n\tPodaj hasło: ");
                 string? hasło = Console.ReadLine();
 
                 if (hasło == "utwórz")
@@ -1048,8 +1051,8 @@
                     danaZalogowania = DodajUżytkownika();
                     if (danaZalogowania == null)
                     {
-                        WyczyścEkran();
-                        Console.Write("Zrezygnowano z tworzenia urzytkownika, kontynuować logowanie? (Y/N) ");
+
+                        Console.Write(" Zrezygnowano z tworzenia urzytkownika, kontynuować logowanie? (Y/N) ");
                         ConsoleKeyInfo kij = Console.ReadKey();
                         Console.WriteLine();
 
@@ -1066,7 +1069,7 @@
 
                 if (listaDL.Length == 0)
                 {
-                    Console.WriteLine("Nie istnieją żadni urzytkownicy, utwórz nowego urzytkownika podając \"utwórz\" w miejsce loginu lub hasła ");
+                    Console.WriteLine(" Nie istnieją żadni urzytkownicy, utwórz nowego urzytkownika podając \"utwórz\" w miejsce loginu lub hasła ");
                     powtórka = true;
                 }
                 else if (!powtórka)
@@ -1085,90 +1088,365 @@
                         }
                     }
 
-                    Console.WriteLine("Błedny login lub hasło");
+                    Console.WriteLine("\n Błedny login lub hasło\n");
                 }
             }
             while (powtórka);
 
             return danaZalogowania;
         }
-        #region Funkcje Z Menu
-        public static void TwojeInformacje(DaneLogowania twojeDane)
+
+        #region Funckcje Użytkowników
+        public static void TwojeInformacje(ref DaneLogowania twojeDane)             // 1
         {
-            Console.WriteLine("Wyświetlanie twoich informacji.\n");
+            CzyszczenieEkranu();
+            Thread.Sleep(100);
+
+            Console.Write(" Menu -> Wyświetl lub modyfikuj informacje o sobie\n\n\n");
+
+            Console.Write(" Twoje dane:\n\n");
+
+            Console.WriteLine("\n\tImie: " + twojeDane.Imię);
+            Console.WriteLine("\n\tNazwisko: " + twojeDane.Nazwisko);
+            Console.WriteLine($"\n\tData urodzenia: {twojeDane.DataUrodzenia.Day}-{twojeDane.DataUrodzenia.Month}-{twojeDane.DataUrodzenia.Year}");
+            Console.WriteLine($"\n\tEmail: {twojeDane.Email}");
+
+            string wybor;
+            string komunikat = "\n\n Czy chcesz edytowac dane? (Y/N): ";
+
+            do
+            {
+
+                Console.Write(komunikat);
+                wybor = Console.ReadLine();
+                CzyszczenieEkranu();
+                Thread.Sleep(100);
+
+                if (wybor.ToUpper() == "Y")
+                {
+                    bool powtórka = false;
+                    Console.Write(" Menu -> Wyświetl lub modyfikuj informacje o sobie\n\n\n");
+                    Console.Write(" Które dane chcesz edytowac?\n\n\t1. Imie\n\t2. Nazwisko\n\t3. Data urodzenia\n\t4. Email\n\n Wybierz numer z listy: ");
+                    int coEdytowac = int.Parse(Console.ReadLine());
+                    CzyszczenieEkranu();
+                    Thread.Sleep(100);
+
+                    Console.Write(" Menu -> Wyświetl lub modyfikuj informacje o sobie -> edycja danych\n\n\n");
+
+                    switch (coEdytowac)
+                    {
+                        case 1:
+
+                            Console.Write("    Wprowadz imie: ");
+                            twojeDane.Imię = Console.ReadLine();
+                            Console.WriteLine();
+                            break;
+
+                        case 2:
+
+                            Console.Write("    Wprowadz nazwisko: ");
+                            twojeDane.Nazwisko = Console.ReadLine();
+                            Console.WriteLine();
+                            break;
+
+                        case 3:
+
+                            DateTime czas = new DateTime();
+                            twojeDane.DataUrodzenia = czas;
+
+
+                            do
+                            {
+                                try
+                                {
+                                    powtórka = false;
+                                    Console.Write("    Wprowadz datę: \n\n\trok urodzenia: ");
+                                    twojeDane.DataUrodzenia = twojeDane.DataUrodzenia.AddYears(int.Parse(Console.ReadLine()) - 1);
+                                }
+                                catch (Exception)
+                                {
+                                    powtórka = true;
+                                }
+
+                            }
+                            while (powtórka);
+
+                            do
+                            {
+                                try
+                                {
+                                    powtórka = false;
+                                    Console.Write("\n\tmiesiac urodzenia: ");
+                                    twojeDane.DataUrodzenia = twojeDane.DataUrodzenia.AddMonths(int.Parse(Console.ReadLine()) - 1);
+                                }
+                                catch (Exception)
+                                {
+                                    powtórka = true;
+                                }
+
+                            }
+                            while (powtórka);
+
+                            do
+                            {
+                                try
+                                {
+                                    powtórka = false;
+                                    Console.Write("\n\tdzien urodzenia: ");
+                                    twojeDane.DataUrodzenia = twojeDane.DataUrodzenia.AddDays(int.Parse(Console.ReadLine()) - 1);
+                                    Console.WriteLine();
+                                }
+                                catch (Exception)
+                                {
+                                    powtórka = true;
+                                }
+
+                            }
+                            while (powtórka);
+                            break;
+
+                        case 4:
+
+                            Console.Write("    Wprowadz email: ");
+                            twojeDane.Email = Console.ReadLine();
+                            Console.WriteLine();
+                            break;
+
+
+
+                    }
+                    komunikat = "\n Czy chcesz edytować inne dane? (Y/N): ";
+                }
+            } while (wybor != "N");
+
+            DaneLogowania doZapisania = twojeDane;
+            FunkcjeAuto.ZapiszPlik(doZapisania, doZapisania.ID);
 
         }
-        public static void InfoOTwoichUrz(DaneLogowania twojeDane)
+        public static void InfoOTwoichUrz(DaneLogowania twojeDane)                  // 2
         {
             Console.WriteLine("Wyświetlanie informacji o twoich urządzeniach.\n");
 
         }
-        public static void InfoOTwoichAbo(DaneLogowania twojeDane)
+        public static void InfoOTwoichAbo(DaneLogowania twojeDane)                  // 3
         {
             Console.WriteLine("Wyświetlanie informacji o twoich abonamentach.\n");
 
         }
-        public static void InfoOTwoichPak(DaneLogowania twojeDane)
+        public static void InfoOTwoichPak(DaneLogowania twojeDane)                  // 4
         {
             Console.WriteLine("Wyświetlanie informacji o twoich pakietach.\n");
 
         }
-        public static void InfoOOfertachUrz()
+        public static void InfoOOfertachUrz()                                       // 5
         {
+            UrządzeniaInfo[] ui = new UrządzeniaInfo[3];
+            ui = FunkcjeAuto.WczytajWszystkiePliki(ui);
+
             Console.WriteLine("Wyświetlanie dostępnych ofert Urządzeń");
 
         }
-        public static void InfoOOfertachAbo()
+        public static void InfoOOfertachAbo()                                       // 6
         {
             Console.WriteLine("Wyświetlanie dostępnych ofert Abonamntów");
 
         }
-        public static void InfoOOfertachPak()
+        public static void InfoOOfertachPak()                                       // 7
         {
             Console.WriteLine("Wyświetlanie dostępnych ofert Pakietów");
 
         }
-        public static void InfoOUrzKlientów()
+        #endregion
+
+        #region Funkcje Admina
+        public static void InfoOUrzKlientów()                                       // 1
         {
             Console.WriteLine("Wyświetlanie informacji o urządzeniach klientów");
 
+            DaneLogowania[] daneLog = new DaneLogowania[1];
+            daneLog = FunkcjeAuto.WczytajWszystkiePliki(daneLog);
+
+            int[] listaIDKlientów;
+            List<int> tempListaID = new List<int>();
+
+            foreach (DaneLogowania dl in daneLog)
+            {
+                if (!dl.Admin)
+                {
+                    tempListaID.Append(dl.ID);
+                }
+            }
+
+            listaIDKlientów = tempListaID.ToArray();
+
+            if (listaIDKlientów.Length == 0)
+            {
+                CzyszczenieEkranu();
+                Console.WriteLine("Nie istnieją żadni Klienci");
+                Thread.Sleep(2000);
+                CzyszczenieEkranu();
+                return;
+            }
+
+            WszystkieDaneKlienta[] daneKlientów;
+
+
         }
-        public static void InfoOAboKlientów()
+        public static void InfoOAboKlientów()                                       // 2
         {
             Console.WriteLine("Wyświetlanie informacji o abonamntach klientów");
 
         }
-        public static void InfoOPakKlientów()
+        public static void InfoOPakKlientów()                                       // 3
         {
             Console.WriteLine("Wyświetlanie informacji o pakietach klientów");
 
         }
-        public static void ModyfikacjaOfertUrz()
+        public static void ModyfikacjaOfertUrz()                                    // 4
         {
             Console.WriteLine("Modyfikujacja dostepnych ofert Urządzeń");
 
         }
-        public static void ModyfikacjaOfertAbo()
+        public static void ModyfikacjaOfertAbo()                                    // 5
         {
             Console.WriteLine("Modyfikujacja dostepnych ofert Abonamentów");
 
         }
-        public static void ModyfikacjaOfertPak()
+        public static void ModyfikacjaOfertPak()                                    // 6
         {
             Console.WriteLine("Modyfikujacja dostepnych ofert Pakietów");
 
         }
-        public static void DodajOfertęUrz()
+        public static void DodajOfertęUrz()                                         // 7
         {
-            Console.WriteLine("Dodawanie nowej oferty Urządzenia");
+
+            Console.WriteLine("Dodawanie nowej oferty Urzadzenia");
+
+            UrządzeniaInfo noweUrz = new();
+            UrządzeniaInfo[] listaUrz = new UrządzeniaInfo[1];
+            listaUrz = FunkcjeAuto.WczytajWszystkiePliki(listaUrz);
+            string[] listaNazw = new string[listaUrz.Length];
+            int i = 0;
+            bool powtórka;
+
+            foreach (UrządzeniaInfo dana in listaUrz)
+            {
+                listaNazw[i] = dana.Nazwa;
+                i++;
+            }
+
+            i = 0;
+
+
+
+            Console.WriteLine("\n\n W dowolnym momencie wpisz \"wyjdz\" aby wyjść do menu");
+            Console.WriteLine("\n Tworzenie nowego urzadzenia : ");
+
+            do
+            {
+                powtórka = false;
+
+                Console.Write("\n  Podaj nazwe: ");
+                noweUrz.Nazwa = Console.ReadLine();
+
+                if (noweUrz.Nazwa.ToLower() == "wyjdz")
+                {
+                    return;
+                }
+
+                foreach (string nazwa in listaNazw)
+                {
+                    if (nazwa == noweUrz.Nazwa)
+                    {
+                        powtórka = true;
+                        Console.Write("\n    Nazwa juz istnieje");
+
+                        break;
+                    }
+                }
+            }
+            while (powtórka);
+
+            do
+            {
+                try
+                {
+                    powtórka = false;
+                    Console.Write("\n  Podaj cene: ");
+                    string wprowadzono = Console.ReadLine();
+
+
+                    if (wprowadzono.ToLower() == "wyjdz")
+                    {
+                        return;
+                    }
+
+                    noweUrz.Cena = int.Parse(wprowadzono);
+
+                    if (noweUrz.Cena < 0)
+                    {
+                        powtórka = true;
+                    }
+                }
+                catch (Exception)
+                {
+                    powtórka = true;
+                }
+
+            }
+            while (powtórka);
+
+            i = 0;
+
+            Console.Write("\n  Podaj wytwórce: ");
+            noweUrz.Wytwórca = Console.ReadLine();
+
+            if (noweUrz.Wytwórca.ToLower() == "wyjdz")
+            {
+                return;
+            }
+
+            Console.Write("\n  Podaj liczbę wariantów: ");
+            int ilośćWariantów = int.Parse(Console.ReadLine());
+            noweUrz.Warianty = new string[ilośćWariantów];
+
+            for (int j = 0; j < ilośćWariantów; j++)
+            {
+                Console.Write($"Podaj {j + 1} wariant:");
+                noweUrz.Warianty[j] = Console.ReadLine();
+
+                if (noweUrz.Warianty[j].ToLower() == "wyjdz")
+                {
+                    return;
+                }
+            }
+
+            Console.Write("\n  Podaj liczbę kolorów: ");
+            int ilośćKolorów = int.Parse(Console.ReadLine());
+            noweUrz.Kolory = new string[ilośćKolorów];
+
+            for (int j = 0; j < ilośćKolorów; j++)
+            {
+                Console.Write($"Podaj {j + 1} wariant: ");
+                noweUrz.Kolory[j] = Console.ReadLine();
+
+                if (noweUrz.Kolory[j].ToLower() == "wyjdz")
+                {
+                    return;
+                }
+            }
+
+            FunkcjeAuto.ZapiszPlik(noweUrz, noweUrz.ID);
+
+
 
         }
-        public static void DodajOfertęAbo()
+        public static void DodajOfertęAbo()                                         // 8
         {
             Console.WriteLine("Dodawanie nowej oferty Abonamentu");
 
         }
-        public static void DodajOfertęPak()
+        public static void DodajOfertęPak()                                         // 9
         {
             Console.WriteLine("Dodawanie nowej oferty Pakietu");
 
@@ -1177,6 +1455,9 @@
 
         static void Main(string[] args)
         {
+
+            Console.BackgroundColor = ConsoleColor.White;
+            Console.ForegroundColor = ConsoleColor.Black;
             bool zostań = true;
 
             FunkcjeAuto.CzyIstniejąWszystkieFoldery();
@@ -1194,12 +1475,13 @@
                 do
                 {
                     zostań = true;
+                    CzyszczenieEkranu();
 
-                    WyczyścEkran();
                     if (!zalogowanyUrzytkownik.Admin)
                     {
-                        Console.WriteLine("Dostępne opcje menu : " +
-                            "\n\t 1 - Wyświetl informacje o sobie" +
+                        Console.Write(" Start -> Menu \t\t |Zalogowano jako: " + zalogowanyUrzytkownik.Imię + "|");
+                        Console.WriteLine("\n\n\n Dostępne opcje: " +
+                            "\n\n\t 1 - Wyświetl lub modyfikuj informacje o sobie" +
                             "\n\t 2 - Wyświetl informacje o swoich urządzeniach" +
                             "\n\t 3 - Wyświetl informacje o swoich abonamntach" +
                             "\n\t 4 - Wyświetl informacje o swoich pakietach \n" +
@@ -1210,6 +1492,7 @@
 
                             "\n\t Wyloguj - Wyloguj się ze swojego konta " +
                             "\n\t Wyjdz - Wyjdź z programu");
+                        Console.Write("\n\n\t");
 
                         string? opcja = Console.ReadLine();
                         if (opcja == null)
@@ -1224,7 +1507,7 @@
                         {
                             case ("1"):
                                 {
-                                    TwojeInformacje(zalogowanyUrzytkownik);
+                                    TwojeInformacje(ref zalogowanyUrzytkownik);
                                     break;
                                 }
                             case ("2"):
@@ -1276,8 +1559,9 @@
                     }
                     else
                     {
-                        Console.WriteLine("Dostępne opcje menu : " +
-                            "\n\t 1 - Wyświetl informacje o urządzeniach klientów" +
+                        Console.Write(" Start -> Menu \t\t |Zalogowano jako Admin: " + zalogowanyUrzytkownik.Imię + "|");
+                        Console.WriteLine("\n\n\n Dostępne opcje: " +
+                            "\n\n\t 1 - Wyświetl informacje o urządzeniach klientów" +
                             "\n\t 2 - Wyświetl informacje o abonamntach klientów" +
                             "\n\t 3 - Wyświetl informacje o pakietach klientów \n" +
 
@@ -1291,6 +1575,7 @@
 
                             "\n\t Wyloguj - Wyloguj się ze swojego konta " +
                             "\n\t Wyjdź - Wyjdź z programu");
+                        Console.Write("\n\n\t");
 
                         string? opcja = Console.ReadLine();
                         if (opcja == null)
@@ -1372,6 +1657,7 @@
                 while (zostań);
             }
             while (true);
+
         }
     }
 }
