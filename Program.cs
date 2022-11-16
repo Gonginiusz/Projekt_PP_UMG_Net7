@@ -6,6 +6,7 @@
     using System;
     using System.Diagnostics;
     using System.Xml.Serialization;
+    using System.Globalization;
 
 #pragma warning disable C8604
 
@@ -390,7 +391,78 @@
             }
             return pustaInstancja;
         }
+        public static WszystkieDaneKlienta WczytajDaneKlienta(int IDKlienta)
+        {
+            UrządzenieKlienta[] urzKl = new UrządzenieKlienta[1];
+            AbonamentKlienta[] aboKl = new AbonamentKlienta[1];
+            PakietKlienta[] pakKl = new PakietKlienta[1];
+
+            DaneLogowania daneLog = (DaneLogowania)FunkcjeAuto.WczytajPlik("DaneLogowania", IDKlienta);
+
+            WszystkieDaneKlienta dane = new WszystkieDaneKlienta();
+
+            dane.daneLog = daneLog;
+            dane.urządzenia = FunkcjeAuto.WczytajWszystkiePliki(urzKl, dane.daneLog.ID);
+            dane.abonamenty = FunkcjeAuto.WczytajWszystkiePliki(aboKl, dane.daneLog.ID);
+            dane.pakiety = FunkcjeAuto.WczytajWszystkiePliki(pakKl, dane.daneLog.ID);
+
+            return dane;
+        }
+        public static WszystkieDaneKlienta[] WczytajWszystkieDaneKlientów()
+        {
+            DaneLogowania[] daneLog = new DaneLogowania[1];
+            daneLog = FunkcjeAuto.WczytajWszystkiePliki(daneLog);
+
+            List<int> tempListaID = new List<int>();
+
+            foreach (DaneLogowania dl in daneLog)
+            {
+                if (!dl.Admin)
+                {
+                    tempListaID.Append(dl.ID);
+                }
+            }
+
+            int[] listaIDKlientów = tempListaID.ToArray();
+
+            WszystkieDaneKlienta[] dane = new WszystkieDaneKlienta[listaIDKlientów.Length];
+
+            for(int i = 0; i < dane.Length; i++)
+            {
+                dane[i] = WczytajDaneKlienta(listaIDKlientów[i]);
+            }
+
+            return dane;
+        }
         #endregion
+
+        /// <summary>
+        /// <para>Usuwa plik, podać kolejno : nazwę folderu, nazwę folderu, ID służące jako nazwa, ID klienta jeśli jest potrzebnea(dla 3 ostatnich folderów).   </para>
+        /// <para>Dostępne foldery :</para>
+        /// <para>DaneLogowania,  UrządzeniaInfo,  AbonamentyInfo,  PakietyInfo,  UrządzeniaKlienta,  AbonamentyKlienta,  PakietyKlienta</para>
+        /// </summary>
+        /// <param name="folder"></param>
+        /// <param name="ID"></param>
+        /// <param name="IDKlienta"></param>
+        /// 
+        public static void UsuńPlik(string folder, int ID, int IDKlienta = -1)
+        {
+            string ścieżka = ŚcieżkaFolderu(folder, IDKlienta) + @$"\{ID}.xml";
+
+            File.Delete(ścieżka);
+        }
+
+        /// <summary>
+        /// <para>Usuwa klienta, podać kolejno : ID klienta.   </para>
+        /// </summary>
+        /// <param name="IDKlienta"></param>
+        /// 
+        public static void UsuńKlienta(int IDKlienta)
+        {
+            UsuńPlik("DaneLogowania", IDKlienta);
+
+            Directory.Delete(ŚcieżkaFolderu("Klienci"), true);
+        }
     }
 
     #region Struktury danych
@@ -443,8 +515,8 @@
         public string Nazwa;
         public string CzęstotliwośćRozliczania;                         // zakładam możliwości: tyg, msc, rok (każde ma 3 litery dla łatwości póżniejszego sprawdzania)
         public double Cena;
-        public double LimitInternetu = 0;                               // 0 dla braku, -1 dla nielimitowanego, >0 dla normalneog limitu
-        public double[] LimityInternetu = { 0, 0 };                       // prędkość przed i po wyczerpaniu limitu
+        public double LimitInternetu = 0;                               // 0 dla braku, -1 dla nielimitowanego, >0 dla normalneog limitu , liczone w GB
+        public double[] LimityPrędkości = { 0, 0 };                     // prędkość przed i po wyczerpaniu limitu, liczobe w kb/s
     }
     [Serializable]
     public class PakietyInfo
@@ -592,7 +664,7 @@
         public DaneLogowania daneLog;
         public UrządzenieKlienta[] urządzenia;
         public AbonamentKlienta[] abonamenty;
-        public PakietKlienta pakiety;
+        public PakietKlienta[] pakiety;
     }
     #endregion
 
@@ -842,7 +914,7 @@
             {
                 powtórka = false;
 
-                Console.Write("\n\n\tPodaj login: ");
+                Console.Write("\n\n  Podaj login: ");
                 nowyU.Login = Console.ReadLine();
 
                 foreach (string login in listaLoginów)
@@ -850,11 +922,11 @@
                     if (login == nowyU.Login)
                     {
                         powtórka = true;
-                        Console.Write("\n\n Login zajęty. ");
+                        Console.Write("\n\n   Login zajęty. ");
 
                         if ((i++) % 3 == 0)
                         {
-                            Console.Write("Jeśli chcesz wyjsc wcisnij Escape (esc): ");
+                            Console.Write("\n     Jeśli chcesz wyjsc wcisnij Escape (esc) ");
                             ConsoleKeyInfo kij = Console.ReadKey(true);
 
                             if (kij.Key == ConsoleKey.Escape)
@@ -895,7 +967,7 @@
 
                         if ((i++) % 3 == 0)
                         {
-                            Console.Write("      Wciśnij escape (esc) aby wyjść");
+                            Console.Write("      Jeśli chcesz wyjsc wcisnij Escape (esc) ");
                             ConsoleKeyInfo kij = Console.ReadKey(true);
 
                             if (kij.Key == ConsoleKey.Escape)
@@ -962,7 +1034,7 @@
             Console.Write("\n  Zarejestrować jako obsługa? Pamiętaj, że obsługa nie ma folderu Klienta(Y/N) : ");
             string admin = Console.ReadLine();
 
-            if (admin.ToUpper() == "Y")
+            if (admin.ToLower() == "y")
             {
 
                 while (true)
@@ -1011,26 +1083,26 @@
             bool powtórka;
 
             CzyszczenieEkranu();
-            Thread.Sleep(100);
-            Console.WriteLine("\n Wpisz \"utwórz\" w miejsce loginu lub hasła, aby stworzyć nowy profil ");
+            
+            Console.WriteLine(" Wpisz \"utwórz\" w miejsce loginu lub hasła, aby stworzyć nowy profil ");
             Console.WriteLine();
 
             do
             {
                 powtórka = false;
 
-                Console.Write("\n\tPodaj login: ");
+                Console.Write("\n   Podaj login: ");
                 string? login = Console.ReadLine();
 
                 if (login == "utwórz")
                 {
                     CzyszczenieEkranu();
-                    Thread.Sleep(100);
+                    
                     danaZalogowania = DodajUżytkownika();
+
                     if (danaZalogowania == null)
                     {
-
-                        Console.Write("\n\n Zrezygnowano z tworzenia użytkownika, kontynuować logowanie? (Y/N): ");
+                        Console.Write("\n\n     Zrezygnowano z tworzenia użytkownika, kontynuować logowanie? (Y/N): ");
                         string kij = Console.ReadLine();
                         Console.WriteLine("\n");
 
@@ -1043,16 +1115,16 @@
                     break;
                 }
 
-                Console.Write("\n\tPodaj hasło: ");
+                Console.Write("\n   Podaj hasło: ");
                 string? hasło = Console.ReadLine();
 
                 if (hasło == "utwórz")
                 {
                     danaZalogowania = DodajUżytkownika();
+
                     if (danaZalogowania == null)
                     {
-
-                        Console.Write(" Zrezygnowano z tworzenia urzytkownika, kontynuować logowanie? (Y/N) ");
+                        Console.Write("\n\n     Zrezygnowano z tworzenia użytkownika, kontynuować logowanie? (Y/N): ");
                         ConsoleKeyInfo kij = Console.ReadKey();
                         Console.WriteLine();
 
@@ -1069,7 +1141,7 @@
 
                 if (listaDL.Length == 0)
                 {
-                    Console.WriteLine(" Nie istnieją żadni urzytkownicy, utwórz nowego urzytkownika podając \"utwórz\" w miejsce loginu lub hasła ");
+                    Console.WriteLine("     Nie istnieją żadni urzytkownicy, utwórz nowego urzytkownika podając \"utwórz\" w miejsce loginu lub hasła ");
                     powtórka = true;
                 }
                 else if (!powtórka)
@@ -1096,23 +1168,24 @@
             return danaZalogowania;
         }
 
+
         #region Funckcje Użytkowników
         public static void TwojeInformacje(ref DaneLogowania twojeDane)             // 1
         {
             CzyszczenieEkranu();
-            Thread.Sleep(100);
+            
 
-            Console.Write(" Menu -> Wyświetl lub modyfikuj informacje o sobie\n\n\n");
+            Console.Write(" Start -> Menu -> Wyświetl lub modyfikuj informacje o sobie\n\n\n");
 
             Console.Write(" Twoje dane:\n\n");
 
-            Console.WriteLine("\n\tImie: " + twojeDane.Imię);
-            Console.WriteLine("\n\tNazwisko: " + twojeDane.Nazwisko);
-            Console.WriteLine($"\n\tData urodzenia: {twojeDane.DataUrodzenia.Day}-{twojeDane.DataUrodzenia.Month}-{twojeDane.DataUrodzenia.Year}");
-            Console.WriteLine($"\n\tEmail: {twojeDane.Email}");
+            Console.WriteLine("  Imie: " + twojeDane.Imię);
+            Console.WriteLine("\n  Nazwisko: " + twojeDane.Nazwisko);
+            Console.WriteLine($"\n  Data urodzenia: {twojeDane.DataUrodzenia.Day}-{twojeDane.DataUrodzenia.Month}-{twojeDane.DataUrodzenia.Year}");
+            Console.WriteLine($"\n  Email: {twojeDane.Email}");
 
             string wybor;
-            string komunikat = "\n\n Czy chcesz edytowac dane? (Y/N): ";
+            string komunikat = "\n\n    Czy chcesz edytowac dane? (Y/N): ";
 
             do
             {
@@ -1120,18 +1193,18 @@
                 Console.Write(komunikat);
                 wybor = Console.ReadLine();
                 CzyszczenieEkranu();
-                Thread.Sleep(100);
+                
 
-                if (wybor.ToUpper() == "Y")
+                if (wybor.ToLower() == "y")
                 {
                     bool powtórka = false;
-                    Console.Write(" Menu -> Wyświetl lub modyfikuj informacje o sobie\n\n\n");
+                    Console.Write(" Start -> Menu -> Wyświetl informacje o sobie\n\n\n");
                     Console.Write(" Które dane chcesz edytowac?\n\n\t1. Imie\n\t2. Nazwisko\n\t3. Data urodzenia\n\t4. Email\n\n Wybierz numer z listy: ");
                     int coEdytowac = int.Parse(Console.ReadLine());
                     CzyszczenieEkranu();
-                    Thread.Sleep(100);
+                    
 
-                    Console.Write(" Menu -> Wyświetl lub modyfikuj informacje o sobie -> edycja danych\n\n\n");
+                    Console.Write(" Start -> Menu -> Wyświetl informacje o sobie -> Edycja danych\n\n\n");
 
                     switch (coEdytowac)
                     {
@@ -1217,7 +1290,7 @@
                     }
                     komunikat = "\n Czy chcesz edytować inne dane? (Y/N): ";
                 }
-            } while (wybor != "N");
+            } while (wybor.ToLower() != "n");
 
             DaneLogowania doZapisania = twojeDane;
             FunkcjeAuto.ZapiszPlik(doZapisania, doZapisania.ID);
@@ -1227,16 +1300,28 @@
         {
             Console.WriteLine("Wyświetlanie informacji o twoich urządzeniach.\n");
 
+            UrządzenieKlienta[] urzKl = new UrządzenieKlienta[1];
+            urzKl = FunkcjeAuto.WczytajWszystkiePliki(urzKl, twojeDane.ID);
+
+            // tylko wyświetlanie, bez modyfikacji
         }
         public static void InfoOTwoichAbo(DaneLogowania twojeDane)                  // 3
         {
             Console.WriteLine("Wyświetlanie informacji o twoich abonamentach.\n");
 
+            AbonamentKlienta[] aboKl = new AbonamentKlienta[1];
+            aboKl = FunkcjeAuto.WczytajWszystkiePliki(aboKl, twojeDane.ID);
+
+            // tylko wyświetlanie, bez modyfikacji
         }
         public static void InfoOTwoichPak(DaneLogowania twojeDane)                  // 4
         {
             Console.WriteLine("Wyświetlanie informacji o twoich pakietach.\n");
 
+            PakietKlienta[] pakKl = new PakietKlienta[1];
+            pakKl = FunkcjeAuto.WczytajWszystkiePliki(pakKl, twojeDane.ID);
+
+            // tylko wyświetlanie, bez modyfikacji
         }
         public static void InfoOOfertachUrz()                                       // 5
         {
@@ -1259,67 +1344,85 @@
         #endregion
 
         #region Funkcje Admina
-        public static void InfoOUrzKlientów()                                       // 1
+        public static void InfoOKlientach()                                         // 1
         {
-            Console.WriteLine("Wyświetlanie informacji o urządzeniach klientów");
+            Console.WriteLine("Wyświetlanie informacji o klientach");
 
-            DaneLogowania[] daneLog = new DaneLogowania[1];
-            daneLog = FunkcjeAuto.WczytajWszystkiePliki(daneLog);
+            WszystkieDaneKlienta[] daneKlientów = FunkcjeAuto.WczytajWszystkieDaneKlientów();       // pełna list danych klientów (nie wszystkich urzytkowników, bo admini nie mają urządzeń, abonamentów ani pliktów)
 
-            int[] listaIDKlientów;
-            List<int> tempListaID = new List<int>();
-
-            foreach (DaneLogowania dl in daneLog)
+            if (daneKlientów.Length == 0)
             {
-                if (!dl.Admin)
-                {
-                    tempListaID.Append(dl.ID);
-                }
-            }
-
-            listaIDKlientów = tempListaID.ToArray();
-
-            if (listaIDKlientów.Length == 0)
-            {
-                CzyszczenieEkranu();
-                Console.WriteLine("Nie istnieją żadni Klienci");
+                Console.WriteLine("\n  Nie istnieją żadni Klienci");
                 Thread.Sleep(2000);
-                CzyszczenieEkranu();
                 return;
             }
 
-            WszystkieDaneKlienta[] daneKlientów;
-
+            /*
+             * Dodać :
+             * 1) Znajdujące się wewnątrz pentli (z której wychodzi się wpisyjąć "wyjdź" (lub wyjdz)) menu wypisujące listę urzytkowników : numer opcji) imię i nazwisko, id
+             * 2) Po wybraniu klienta przechodzi do kolejnej pentli (z której wychodzi się wpisyjąć "wyjdź") i wypisuje listę w formacie :
+             * 
+             *  Imię i Nazwisko, ID
+             *    Dane Osobiste
+             *      ...(lista danych)
+             *    
+             *    Urządzenia
+             *      ...(ponumerowana lista urządzeń (licznik od 1))
+             *    
+             *    Abonamenty
+             *      ...(ponumerowana lista abonametów (licznik kontynuowany od ostatniej liczby w urządzeniach))
+             *    
+             *    Pakiety
+             *      ...(ponumerowana lista pakietów (licznik kontynuowany od ostatniej liczby w abonamentach))
+             *      
+             * 3) Po wybraniu numeru należy wyświetlić listę wartości danej pozycji. Zmienianie jak w zmienianiu właściwości urzytkownika (z menu urzytkownika)
+             */
 
         }
-        public static void InfoOAboKlientów()                                       // 2
-        {
-            Console.WriteLine("Wyświetlanie informacji o abonamntach klientów");
-
-        }
-        public static void InfoOPakKlientów()                                       // 3
-        {
-            Console.WriteLine("Wyświetlanie informacji o pakietach klientów");
-
-        }
-        public static void ModyfikacjaOfertUrz()                                    // 4
+        public static void ModyfikacjaOfertUrz()                                    // 2
         {
             Console.WriteLine("Modyfikujacja dostepnych ofert Urządzeń");
 
+            UrządzeniaInfo[] urzLi = new UrządzeniaInfo[1];
+            urzLi = FunkcjeAuto.WczytajWszystkiePliki(urzLi);
+
+            /*
+             * Dodać :
+             * 1) Znajdujące się wewnątrz pentli (z której wychodzi się wpisyjąć "wyjdź" (lub wyjdz)) menu wypisujące listę urządzeń : numer opcji) Nazwa, id
+             *      
+             * 2) Po wybraniu numeru należy wyświetlić listę wartości danej pozycji. Zmienianie jak w zmienianiu właściwości urzytkownika (z menu urzytkownika)
+             */
         }
-        public static void ModyfikacjaOfertAbo()                                    // 5
+        public static void ModyfikacjaOfertAbo()                                    // 3
         {
             Console.WriteLine("Modyfikujacja dostepnych ofert Abonamentów");
 
+            UrządzeniaInfo[] aboLi = new UrządzeniaInfo[1];
+            aboLi = FunkcjeAuto.WczytajWszystkiePliki(aboLi);
+
+            /*
+             * Dodać :
+             * 1) Znajdujące się wewnątrz pentli (z której wychodzi się wpisyjąć "wyjdź" (lub wyjdz)) menu wypisujące listę urządzeń : numer opcji) Nazwa, id
+             *      
+             * 2) Po wybraniu numeru należy wyświetlić listę wartości danej pozycji. Zmienianie jak w zmienianiu właściwości urzytkownika (z menu urzytkownika)
+             */
         }
-        public static void ModyfikacjaOfertPak()                                    // 6
+        public static void ModyfikacjaOfertPak()                                    // 4
         {
             Console.WriteLine("Modyfikujacja dostepnych ofert Pakietów");
 
-        }
-        public static void DodajOfertęUrz()                                         // 7
-        {
+            UrządzeniaInfo[] pakLi = new UrządzeniaInfo[1];
+            pakLi = FunkcjeAuto.WczytajWszystkiePliki(pakLi);
 
+            /*
+             * Dodać :
+             * 1) Znajdujące się wewnątrz pentli (z której wychodzi się wpisyjąć "wyjdź" (lub wyjdz)) menu wypisujące listę urządzeń : numer opcji) Nazwa, id
+             *      
+             * 2) Po wybraniu numeru należy wyświetlić listę wartości danej pozycji. Zmienianie jak w zmienianiu właściwości urzytkownika (z menu urzytkownika)
+             */
+        }
+        public static void DodajOfertęUrz()                                         // 5
+        {
             Console.WriteLine("Dodawanie nowej oferty Urzadzenia");
 
             UrządzeniaInfo noweUrz = new();
@@ -1334,10 +1437,6 @@
                 listaNazw[i] = dana.Nazwa;
                 i++;
             }
-
-            i = 0;
-
-
 
             Console.WriteLine("\n\n W dowolnym momencie wpisz \"wyjdz\" aby wyjść do menu");
             Console.WriteLine("\n Tworzenie nowego urzadzenia : ");
@@ -1373,20 +1472,20 @@
                 {
                     powtórka = false;
                     Console.Write("\n  Podaj cene: ");
-                    string wprowadzono = Console.ReadLine();
+                    string wprowadzono = Console.ReadLine().ToLower().Replace("ź","z").Replace(",", ".").Replace(" ", "");
 
-
-                    if (wprowadzono.ToLower() == "wyjdz")
+                    if (wprowadzono == "wyjdz")
                     {
                         return;
                     }
 
-                    noweUrz.Cena = int.Parse(wprowadzono);
-
                     if (noweUrz.Cena < 0)
                     {
                         powtórka = true;
+                        continue;
                     }
+
+                    noweUrz.Cena = double.Parse(wprowadzono);
                 }
                 catch (Exception)
                 {
@@ -1395,8 +1494,6 @@
 
             }
             while (powtórka);
-
-            i = 0;
 
             Console.Write("\n  Podaj wytwórce: ");
             noweUrz.Wytwórca = Console.ReadLine();
@@ -1438,15 +1535,136 @@
 
             FunkcjeAuto.ZapiszPlik(noweUrz, noweUrz.ID);
 
-
-
         }
-        public static void DodajOfertęAbo()                                         // 8
+        public static void DodajOfertęAbo()                                         // 6
         {
             Console.WriteLine("Dodawanie nowej oferty Abonamentu");
 
+            AbonamentyInfo nowyAbo = new();
+            AbonamentyInfo[] listaAbo = new AbonamentyInfo[1];
+            listaAbo = FunkcjeAuto.WczytajWszystkiePliki(listaAbo);
+            string[] listaNazw = new string[listaAbo.Length];
+            int i = 0;
+            bool powtórka;
+
+            foreach (AbonamentyInfo dana in listaUrz)
+            {
+                listaNazw[i] = dana.Nazwa;
+                i++;
+            }
+
+            Console.WriteLine("\n\n W dowolnym momencie wpisz \"wyjdz\" aby wyjść do menu");
+            Console.WriteLine("\n Tworzenie nowego urzadzenia : ");
+
+            do
+            {
+                powtórka = false;
+
+                Console.Write("\n  Podaj nazwe: ");
+                nowyAbo.Nazwa = Console.ReadLine();
+
+                if (nowyAbo.Nazwa.ToLower() == "wyjdz")
+                {
+                    return;
+                }
+
+                foreach (string nazwa in listaNazw)
+                {
+                    if (nazwa == nowyAbo.Nazwa)
+                    {
+                        powtórka = true;
+                        Console.Write("\n    Nazwa zajęta");
+
+                        break;
+                    }
+                }
+            }
+            while (powtórka);
+
+            do
+            {
+                try
+                {
+                    powtórka = false;
+                    Console.Write("\n  Podaj cene: ");
+                    string wprowadzono = Console.ReadLine().ToLower().Replace("ź", "z").Replace(" ", "").Replace(",", ".");
+
+                    if (wprowadzono == "wyjdz")
+                    {
+                        return;
+                    }
+
+                    if (nowyAbo.Cena < 0)
+                    {
+                        powtórka = true;
+                        continue;
+                    }
+
+                    nowyAbo.Cena = double.Parse(wprowadzono);
+                }
+                catch (Exception)
+                {
+                    powtórka = true;
+                }
+
+            }
+            while (powtórka);
+
+            Console.Write("\n  Podaj częstotliwośc rozliczenia ( dzień / tydzień / miesiąc ): ");
+            nowyAbo.CzęstotliwośćRozliczania = Console.ReadLine();
+
+            if (nowyAbo.CzęstotliwośćRozliczania.ToLower().Replace("ź","z") == "wyjdz")
+            {
+                return;
+            }
+
+            try
+            {
+                Console.Write("\n  Podaj limit internetu (w GB), -1 dla nielimitowanego, 0 dla braku internetu: ");
+                string wprowadzone = Console.ReadLine().ToLower().Replace("ź","z").Replace(",",".").Replace(" ", "");
+
+                if(wprowadzone == "wyjdz")
+                {
+                    return;
+                }
+
+                nowyAbo.LimitInternetu = double.Parse(wprowadzone);
+            }
+            catch (Exception) { }
+
+            try
+            {
+                Console.Write("\n  Podaj dolny limit szybkości internetu (w kb/s), 0 dla braku internetu: ");
+                string wprowadzone = Console.ReadLine().ToLower().Replace("ź", "z").Replace(" ", "").Replace(",", ".");
+
+                if (wprowadzone == "wyjdz")
+                {
+                    return;
+                }
+
+                nowyAbo.LimityPrędkości[0] = double.Parse(wprowadzone);
+            }
+            catch (Exception) { }
+
+            try
+            {
+                Console.Write("\n  Podaj górny limit szybkości internetu (w kb/s), 0 dla braku internetu: ");
+                string wprowadzone = Console.ReadLine().ToLower().Replace("ź", "z").Replace(" ", "").Replace(",", ".");
+
+                if (wprowadzone == "wyjdz")
+                {
+                    return;
+                }
+
+                nowyAbo.LimityPrędkości[1] = double.Parse(wprowadzone);
+            }
+            catch (Exception) { }
+
+
+            FunkcjeAuto.ZapiszPlik(nowyAbo, nowyAbo.ID);
+
         }
-        public static void DodajOfertęPak()                                         // 9
+        public static void DodajOfertęPak()                                         // 7
         {
             Console.WriteLine("Dodawanie nowej oferty Pakietu");
 
@@ -1455,6 +1673,7 @@
 
         static void Main(string[] args)
         {
+            CultureInfo.CurrentCulture = new CultureInfo("pl-PL");
 
             Console.BackgroundColor = ConsoleColor.White;
             Console.ForegroundColor = ConsoleColor.Black;
@@ -1480,8 +1699,9 @@
                     if (!zalogowanyUrzytkownik.Admin)
                     {
                         Console.Write(" Start -> Menu \t\t |Zalogowano jako: " + zalogowanyUrzytkownik.Imię + "|");
-                        Console.WriteLine("\n\n\n Dostępne opcje: " +
-                            "\n\n\t 1 - Wyświetl lub modyfikuj informacje o sobie" +
+                        Console.WriteLine("\n\n Dostępne opcje: " +
+                            "\n\n\t 1 - Wyświetl lub modyfikuj informacje o sobie \n" +
+
                             "\n\t 2 - Wyświetl informacje o swoich urządzeniach" +
                             "\n\t 3 - Wyświetl informacje o swoich abonamntach" +
                             "\n\t 4 - Wyświetl informacje o swoich pakietach \n" +
@@ -1507,36 +1727,43 @@
                         {
                             case ("1"):
                                 {
+                                    CzyszczenieEkranu();
                                     TwojeInformacje(ref zalogowanyUrzytkownik);
                                     break;
                                 }
                             case ("2"):
                                 {
+                                    CzyszczenieEkranu();
                                     InfoOTwoichUrz(zalogowanyUrzytkownik);
                                     break;
                                 }
                             case ("3"):
                                 {
+                                    CzyszczenieEkranu();
                                     InfoOTwoichAbo(zalogowanyUrzytkownik);
                                     break;
                                 }
                             case ("4"):
                                 {
+                                    CzyszczenieEkranu();
                                     InfoOTwoichPak(zalogowanyUrzytkownik);
                                     break;
                                 }
                             case ("5"):
                                 {
+                                    CzyszczenieEkranu();
                                     InfoOOfertachUrz();
                                     break;
                                 }
                             case ("6"):
                                 {
+                                    CzyszczenieEkranu();
                                     InfoOOfertachAbo();
                                     break;
                                 }
                             case ("7"):
                                 {
+                                    CzyszczenieEkranu();
                                     InfoOOfertachPak();
                                     break;
                                 }
@@ -1561,17 +1788,15 @@
                     {
                         Console.Write(" Start -> Menu \t\t |Zalogowano jako Admin: " + zalogowanyUrzytkownik.Imię + "|");
                         Console.WriteLine("\n\n\n Dostępne opcje: " +
-                            "\n\n\t 1 - Wyświetl informacje o urządzeniach klientów" +
-                            "\n\t 2 - Wyświetl informacje o abonamntach klientów" +
-                            "\n\t 3 - Wyświetl informacje o pakietach klientów \n" +
+                            "\n\t 1 - Wyświetl informacje o klientach \n" +
 
-                            "\n\t 4 - Modyfikuj dostepne oferty Urządzeń" +
-                            "\n\t 5 - Modyfikuj dostepne oferty Abonamentów" +
-                            "\n\t 6 - Modyfikuj dostepne oferty Pakietów \n" +
+                            "\n\t 2 - Pokaż i modyfikuj dostepne oferty Urządzeń" +
+                            "\n\t 3 - Pokaż i modyfikuj dostepne oferty Abonamentów" +
+                            "\n\t 4 - Pokaż i modyfikuj dostepne oferty Pakietów \n" +
 
-                            "\n\t 7 - Dodaj nową ofertę Urządzenia" +
-                            "\n\t 8 - Dodaj nową ofertę Abonamentu" +
-                            "\n\t 9 - Dodaj nową ofertę Pakietu \n" +
+                            "\n\t 5 - Dodaj nową ofertę Urządzenia" +
+                            "\n\t 6 - Dodaj nową ofertę Abonamentu" +
+                            "\n\t 7 - Dodaj nową ofertę Pakietu \n" +
 
                             "\n\t Wyloguj - Wyloguj się ze swojego konta " +
                             "\n\t Wyjdź - Wyjdź z programu");
@@ -1591,46 +1816,43 @@
                         {
                             case ("1"):
                                 {
-                                    InfoOUrzKlientów();
+                                    CzyszczenieEkranu();
+                                    InfoOKlientach();
                                     break;
                                 }
                             case ("2"):
                                 {
-                                    InfoOAboKlientów();
+                                    CzyszczenieEkranu();
+                                    ModyfikacjaOfertUrz();
                                     break;
                                 }
                             case ("3"):
                                 {
-                                    InfoOPakKlientów();
+                                    CzyszczenieEkranu();
+                                    ModyfikacjaOfertAbo();
                                     break;
                                 }
                             case ("4"):
                                 {
-                                    ModyfikacjaOfertUrz();
+                                    CzyszczenieEkranu();
+                                    ModyfikacjaOfertPak();
                                     break;
                                 }
                             case ("5"):
                                 {
-                                    ModyfikacjaOfertAbo();
+                                    CzyszczenieEkranu();
+                                    DodajOfertęUrz();
                                     break;
                                 }
                             case ("6"):
                                 {
-                                    ModyfikacjaOfertPak();
+                                    CzyszczenieEkranu();
+                                    DodajOfertęAbo();
                                     break;
                                 }
                             case ("7"):
                                 {
-                                    DodajOfertęUrz();
-                                    break;
-                                }
-                            case ("8"):
-                                {
-                                    DodajOfertęAbo();
-                                    break;
-                                }
-                            case ("9"):
-                                {
+                                    CzyszczenieEkranu();
                                     DodajOfertęPak();
                                     break;
                                 }
@@ -1652,7 +1874,6 @@
                                 }
                         }
                     }
-
                 }
                 while (zostań);
             }
