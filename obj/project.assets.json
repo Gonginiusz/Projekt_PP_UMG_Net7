@@ -1,30 +1,49 @@
 {
   "version": 3,
   "targets": {
-    "net7.0": {}
+    "net7.0": {
+      "Funkcje/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v7.0",
+        "compile": {
+          "bin/placeholder/Funkcje.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Funkcje.dll": {}
+        }
+      }
+    }
   },
-  "libraries": {},
+  "libraries": {
+    "Funkcje/1.0.0": {
+      "type": "project",
+      "path": "../Funkcje/Funkcje.csproj",
+      "msbuildProject": "../Funkcje/Funkcje.csproj"
+    }
+  },
   "projectFileDependencyGroups": {
-    "net7.0": []
+    "net7.0": [
+      "Funkcje >= 1.0.0"
+    ]
   },
   "packageFolders": {
-    "C:\\Users\\Piotr Knasiak\\.nuget\\packages\\": {},
-    "E:\\hh\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
+    "C:\\Users\\piokn\\.nuget\\packages\\": {},
+    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\Piotr Knasiak\\Documents\\GitHub\\Projekt_PP_UMG_Net7\\Projekt_PP_UMG_Net7.csproj",
+      "projectUniqueName": "C:\\Users\\piokn\\Documents\\GitHub\\Projekt_PP_UMG_Net7\\Projekt_PP_UMG_Net7.csproj",
       "projectName": "Projekt_PP_UMG_Net7",
-      "projectPath": "C:\\Users\\Piotr Knasiak\\Documents\\GitHub\\Projekt_PP_UMG_Net7\\Projekt_PP_UMG_Net7.csproj",
-      "packagesPath": "C:\\Users\\Piotr Knasiak\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\Piotr Knasiak\\Documents\\GitHub\\Projekt_PP_UMG_Net7\\obj\\",
+      "projectPath": "C:\\Users\\piokn\\Documents\\GitHub\\Projekt_PP_UMG_Net7\\Projekt_PP_UMG_Net7.csproj",
+      "packagesPath": "C:\\Users\\piokn\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\piokn\\Documents\\GitHub\\Projekt_PP_UMG_Net7\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
-        "E:\\hh\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
       ],
       "configFilePaths": [
-        "C:\\Users\\Piotr Knasiak\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\piokn\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
@@ -39,7 +58,11 @@
       "frameworks": {
         "net7.0": {
           "targetAlias": "net7.0",
-          "projectReferences": {}
+          "projectReferences": {
+            "C:\\Users\\piokn\\Documents\\GitHub\\Funkcje\\Funkcje.csproj": {
+              "projectPath": "C:\\Users\\piokn\\Documents\\GitHub\\Funkcje\\Funkcje.csproj"
+            }
+          }
         }
       },
       "warningProperties": {
